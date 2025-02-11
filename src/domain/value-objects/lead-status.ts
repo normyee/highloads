@@ -1,14 +1,10 @@
-import { IValueObject } from '../common/interfaces/value-object.interface';
-import { validateInclude } from '../common/validations/validations';
+import { IValueObject } from '../shared/abstractions/value-object.interface';
+import { validateInclude } from '../shared/validations/validations';
+import { STATUS } from '../consts';
 
 export class LeadStatus implements IValueObject<string> {
   private readonly _status: string;
-  private static readonly _validStatuses = [
-    'NOVO',
-    'EM CONTATO',
-    'QUALIFICADO',
-    'DESCARTADO',
-  ];
+  private static readonly _validStatuses = STATUS;
 
   private constructor(status: string) {
     this._status = status;

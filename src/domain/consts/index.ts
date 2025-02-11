@@ -1,0 +1,1 @@
+export const STATUS = ['NOVO', 'EM CONTATO', 'QUALIFICADO', 'DESCARTADO'];

@@ -1,6 +1,6 @@
-import { IAggregateRoot } from '../common/interfaces/aggregate.interface';
-import { Interaction } from '../entities/interaction.entity';
-import { LeadStatus } from '../value-objects/lead-status';
+import { IAggregateRoot } from '../shared/abstractions/aggregate.interface';
+import { Interaction } from '../entities/Interaction.entity';
+import { LeadStatus } from '../value-objects/Lead-status';
 
 export class Lead implements IAggregateRoot {
   private _id: string;
