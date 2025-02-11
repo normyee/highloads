@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  # Banco de dados de leitura
+  postgres:
+    image: postgres:13
+    container_name: postgres
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: read_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+    networks:
+      - app-network
+
+  # Para publicação e consumo de eventos
+  kafka:
+    image: wurstmeister/kafka:latest
+    container_name: kafka
+    environment:
+      KAFKA_ADVERTISED_LISTENER: INSIDE://kafka:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL: PLAINTEXT
+      KAFKA_LISTENER_PORT: 9093
+      KAFKA_LISTENER_NAME: INSIDE
+      KAFKA_LISTENER_MODE: BROKER
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    ports:
+      - '9093:9093'
+    depends_on:
+      - zookeeper
+    networks:
+      - app-network
+
+  # Zookeeper para o Kafka
+  zookeeper:
+    image: wurstmeister/zookeeper:latest
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    ports:
+      - '2181:2181'
+    networks:
+      - app-network
+
+  # DynamoDB para banco de dados de escrita
+  dynamodb:
+    image: amazon/dynamodb-local
+    container_name: dynamodb-local
+    ports:
+      - '8000:8000'
+    environment:
+      - DB_PATH=/data/db
+    volumes:
+      - dynamodb_data:/data
+    networks:
+      - app-network
+
+volumes:
+  postgres_data:
+  dynamodb_data:
+
+networks:
+  app-network:
+    driver: bridge
