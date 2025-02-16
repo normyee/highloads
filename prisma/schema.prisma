@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ENUMS
+enum Status {
+  NEW
+  CONTACTED
+  QUALIFIED
+  CLOSED
+}
+
+enum Channel {
+  EMAIL
+}
+
+enum CompanySize {
+  SMALL
+  MEDIUM
+  LARGE
+}
+
+// AGREGADO (DESNORMALIZADO)
+model Lead {
+  uid                     String       @id @default(uuid())
+  name                    String
+  email                   String?       @unique
+  corporation_name        String?
+  corporation_domain      String?
+  interaction_newest_message String?
+  status                  Status
+  interactions            Interaction[]
+  channel                 Channel
+  corporation_fk          String?
+  corporation             Corporation? @relation(fields: [corporation_fk], references: [uid], onDelete: SetNull)
+
+  @@map("leads") 
+}
+
+// ENTIDADE
+model Corporation {
+  uid       String  @id @default(uuid())
+  name     String
+  domain   String?
+  CNPJ     String  @unique
+  location String?
+  field    String?
+  size     CompanySize?
+  leads    Lead[]
+
+  @@map("corporations")
+}
+
+// ENTIDADE
+model Interaction {
+  uid        String  @id @default(uuid())
+  message   String
+  timestamp DateTime
+  lead_fk    String
+  lead      Lead    @relation(fields: [lead_fk], references: [uid], onDelete: Cascade)
+
+  @@map("interactions")
+}
