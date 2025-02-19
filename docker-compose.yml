@@ -1,14 +1,14 @@
 version: '3.8'
 
 services:
-  # Banco de dados de leitura
+  # POSTGRESQL - Banco de dados Desnormalizado
   postgres:
-    image: postgres:13
+    image: postgres:latest
     container_name: postgres
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: read_db
+      POSTGRES_DB: mydatabase
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -16,51 +16,37 @@ services:
     networks:
       - app-network
 
-  # Para publicação e consumo de eventos
-  kafka:
-    image: wurstmeister/kafka:latest
-    container_name: kafka
+  # RABBITMQ - FILAS
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
     environment:
-      KAFKA_ADVERTISED_LISTENER: INSIDE://kafka:9093
-      KAFKA_LISTENER_SECURITY_PROTOCOL: PLAINTEXT
-      KAFKA_LISTENER_PORT: 9093
-      KAFKA_LISTENER_NAME: INSIDE
-      KAFKA_LISTENER_MODE: BROKER
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
     ports:
-      - '9093:9093'
-    depends_on:
-      - zookeeper
+      - '5672:5672'
+      - '15672:15672'
     networks:
       - app-network
 
-  # Zookeeper para o Kafka
-  zookeeper:
-    image: wurstmeister/zookeeper:latest
-    container_name: zookeeper
+  # LOCALSTACK - AWS
+  localstack:
+    image: localstack/localstack
+    container_name: localstack
     environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
+      - SERVICES=dynamodb
+      - DEFAULT_REGION=us-east-1
     ports:
-      - '2181:2181'
-    networks:
-      - app-network
-
-  # DynamoDB para banco de dados de escrita
-  dynamodb:
-    image: amazon/dynamodb-local
-    container_name: dynamodb-local
-    ports:
-      - '8000:8000'
-    environment:
-      - DB_PATH=/data/db
+      - '4566:4566' # Porta para acessar todos os serviços do LocalStack
+      - '4510:4510' # Porta específica para o DynamoDB
     volumes:
-      - dynamodb_data:/data
+      - localstack_data:/var/lib/localstack
     networks:
       - app-network
 
 volumes:
   postgres_data:
-  dynamodb_data:
+  localstack_data:
 
 networks:
   app-network:
